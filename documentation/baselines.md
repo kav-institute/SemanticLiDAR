@@ -55,3 +55,32 @@ Code framework derived from [CENet](https://github.com/huixiancheng/CENet)
 
 ### Licence ###
 MIT License
+
+## SalsaNext
+SalsaNext: Fast, Uncertainty-aware Semantic Segmentation of LiDAR Point Clouds for Autonomous Driving
+
+### Train Details ###
+```
+Pretrained: True
+Epochs: 30
+Batch Size: 2
+Learning Rate: 0001
+Loss: Cross Entropy + Tversky 
+```
+
+### Publication ###
+```
+@misc{cortinhal2020salsanext,
+    title={SalsaNext: Fast, Uncertainty-aware Semantic Segmentation of LiDAR Point Clouds for Autonomous Driving},
+    author={Tiago Cortinhal and George Tzelepis and Eren Erdal Aksoy},
+    year={2020},
+    eprint={2003.03653},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
+### Acknowledgments ###
+Code framework derived from [SalsaNext](https://github.com/TiagoCortinhal/SalsaNext)
+
+### Licence ###
+MIT License
