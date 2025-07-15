@@ -13,7 +13,7 @@ import cv2
 
 
 class SemanticKitti(Dataset):
-    def __init__(self, data_path, rotate=False, flip=False):
+    def __init__(self, data_path, rotate=False, flip=False, resolution=(2048,128), projection=(64,2048), resize=True):
         self.data_path = data_path
         self.rotate = rotate
         self.flip = flip
@@ -21,6 +21,9 @@ class SemanticKitti(Dataset):
             transforms.ToTensor(),
             # Add more transformations if needed
         ])
+        self.resolution = resolution
+        self.projection = projection
+        self.resize = resize
 
     def __len__(self):
         return len(self.data_path)
@@ -50,9 +53,11 @@ class SemanticKitti(Dataset):
         if self.rotate:
             random_angle = np.random.randint(-180,180)
             xyzil[...,0:3] = rotate_z(xyzil[...,0:3].reshape(-1,3), random_angle)
-        xyzi_img, _, _ , _ = spherical_projection(xyzil,64,2048)
-        xyzi_img = cv2.resize(xyzi_img, (2048,128), interpolation=cv2.INTER_NEAREST)
+        xyzi_img, _, _ , _ = spherical_projection(xyzil,self.projection[0],self.projection[1])
+        if self.resize:
+            xyzi_img = cv2.resize(xyzi_img, (2048,128), interpolation=cv2.INTER_NEAREST)
         
+
         if self.flip:
             do_flip = np.random.choice([True, False])
             if do_flip:
@@ -85,7 +90,7 @@ def main():
     import cv2 
     data_path_test = [(bin_path, bin_path.replace("velodyne", "labels").replace("bin", "label")) for bin_path in sorted(glob.glob(f"/home/appuser/data/SemanticKitti/dataset/sequences/08/velodyne/*.bin"))]
 
-    depth_dataset_test = SemanticKitti(data_path_test, rotate=False, flip=False)
+    depth_dataset_test = SemanticKitti(data_path_test, rotate=False, flip=False, projection=(64,512),resize=False)
     dataloader_test = DataLoader(depth_dataset_test, batch_size=1, shuffle=False)
 
     for batch_idx, (range_img, reflectivity, xyz, normals, semantic)  in enumerate(dataloader_test):
