@@ -9,7 +9,7 @@ except:
     from utils import rotate_equirectangular_image, rotate_z, build_normal_xyz, spherical_projection
     from definitions import custom_colormap
 import cv2
-
+import open3d as o3d
 
 id_map = {
   0 : 0,     # "unlabeled"
@@ -129,7 +129,7 @@ def main():
     import cv2 
     #/home/reichert/Dev/SemanticLiDAR-main/dataset/STU/train/201/velodyne/000000.bin
     #/home/reichert/Dev/SemanticLiDAR-main/dataset/CUDAL/41/velodyne/000000.bin
-    data_path_test = [(bin_path, bin_path.replace("velodyne", "labels").replace("bin", "label")) for bin_path in sorted(glob.glob(f"/home/appuser/data/dataset/CUDAL/41/velodyne/*.bin"))]
+    data_path_test = [(bin_path, bin_path.replace("velodyne", "labels").replace("bin", "label")) for bin_path in sorted(glob.glob(f"/home/appuser/data/Panoptic-CUDAL/31/velodyne/*.bin"))]
 
     depth_dataset_test = SemanticKitti(data_path_test, rotate=False, flip=False, projection=(128,1024),resize=False)
     dataloader_test = DataLoader(depth_dataset_test, batch_size=1, shuffle=False)
@@ -137,12 +137,25 @@ def main():
     for batch_idx, (range_img, reflectivity, xyz, normals, semantic)  in enumerate(dataloader_test):
         semantics = (semantic[:,0,:,:]).permute(0, 1, 2)[0,...].cpu().detach().numpy()
         reflectivity = (reflectivity[:,0,:,:]).permute(0, 1, 2)[0,...].cpu().detach().numpy()
+        range_img = (range_img[:,0,:,:]).permute(0, 1, 2)[0,...].cpu().detach().numpy()
         normal_img = (normals.permute(0, 2, 3, 1)[0,...].cpu().detach().numpy()+1)/2
+        xyz = xyz.permute(0, 2, 3, 1)[0,...].cpu().detach().numpy()
         prev_sem_pred = cv2.applyColorMap(np.uint8(semantics), custom_colormap)
         cv2.imshow("semseg", prev_sem_pred[...,::-1])
-        cv2.imshow("reflectivity", cv2.applyColorMap(np.uint8(255*reflectivity),cv2.COLORMAP_JET))
+        cv2.imshow("range_img", cv2.applyColorMap(np.uint8(255*reflectivity),cv2.COLORMAP_JET))
+        cv2.imshow("reflectivity", cv2.applyColorMap(np.uint8(255*range_img/100.0),cv2.COLORMAP_TURBO))
 
-        cv2.waitKey(1)
+        if (cv2.waitKey(1) & 0xFF) == ord('q'):
+            
+
+            #time.sleep(10)
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(xyz.reshape(-1,3))
+            pcd.colors = o3d.utility.Vector3dVector(np.float32(prev_sem_pred.reshape(-1,3))/255.0)
+
+            mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
+
+            o3d.visualization.draw_geometries([mesh, pcd])
 
 if __name__ == "__main__":
     main()
