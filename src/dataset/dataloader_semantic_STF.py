@@ -13,7 +13,7 @@ import open3d as o3d
 
 
 class SemanticKitti(Dataset):
-    def __init__(self, data_path, rotate=False, flip=False, resolution=(2048,128), projection=(64,2048), resize=True):
+    def __init__(self, data_path, rotate=False, flip=False, resolution=(2048,128), projection=(64,2048), resize=True, remap_adverse_label=False, clip=True):
         self.data_path = data_path
         self.rotate = rotate
         self.flip = flip
@@ -24,6 +24,8 @@ class SemanticKitti(Dataset):
         self.resolution = resolution
         self.projection = projection
         self.resize = resize
+        self.remap_adverse_label = remap_adverse_label
+        self.clip = clip
 
     def __len__(self):
         return len(self.data_path)
@@ -44,7 +46,14 @@ class SemanticKitti(Dataset):
         #inst_label = label >> 16
         sem_label_map = sem_label
 
-        #sem_label_map = np.array([id_map[l] for l in sem_label])
+        if self.clip:
+            # Remove all points that are part of the sensor noise due to clipping of the distances
+            local_sensor_clip = 1.8
+            remove_idx = np.where(np.linalg.norm(xyzi[:, 0:3],axis=-1)>=local_sensor_clip)
+            sem_label_map = sem_label_map[remove_idx]
+            xyzi = xyzi[remove_idx]
+        if self.remap_adverse_label:
+            sem_label_map = np.where(sem_label_map==20, 0, sem_label_map)
 
         xyzil = np.concatenate([xyzi, sem_label_map[...,np.newaxis]],axis=-1)
 
