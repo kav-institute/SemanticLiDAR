@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import torchvision.models as models
 import torch
 
+from .ConvNextV2 import ConvNeXtV2
+
 
 class AttentionModule(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -133,6 +135,30 @@ class SemanticNetworkWithFPN(nn.Module):#
             # Use EfficientNetV2-S from torchvision
             self.backbone = models.efficientnet_v2_l(pretrained=True)
             base_channels = [192, 192, 96, 64, 168] 
+        elif backbone == 'convnextv2_atto':
+            self.backbone = ConvNeXtV2(depths=[2, 2, 6, 2], dims=[40, 80, 160, 320],in_chans=input_channels+meta_channel_dim)
+            base_channels = [320, 160, 80, 40, 20]
+        elif backbone == 'convnextv2_femto':
+            self.backbone = ConvNeXtV2(depths=[2, 2, 6, 2], dims=[48, 96, 192, 384],in_chans=input_channels+meta_channel_dim)
+            base_channels = [384, 192, 96, 48, 24]
+        elif backbone == 'convnextv2_pico':
+            self.backbone = ConvNeXtV2(depths=[2, 2, 6, 2], dims=[64, 128, 256, 512],in_chans=input_channels+meta_channel_dim)
+            base_channels = [512, 256, 128, 64, 32]
+        elif backbone == 'convnextv2_nano':
+            self.backbone = ConvNeXtV2(depths=[2, 2, 8, 2], dims=[80, 160, 320, 640],in_chans=input_channels+meta_channel_dim)
+            base_channels = [640, 320, 160, 80, 40]
+        elif backbone == 'convnextv2_tiny':
+            self.backbone = ConvNeXtV2(depths=[3, 3, 9, 3], dims=[96, 192, 384, 768],in_chans=input_channels+meta_channel_dim)
+            base_channels = [768, 384, 192, 96, 48]
+        elif backbone == 'convnextv2_base':
+            self.backbone = ConvNeXtV2(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024],in_chans=input_channels+meta_channel_dim)
+            base_channels = [1024, 512, 256, 128, 64]
+        elif backbone == 'convnextv2_huge':
+            self.backbone = ConvNeXtV2(depths=[3, 3, 27, 3], dims=[352, 704, 1408, 2816],in_chans=input_channels+meta_channel_dim)
+            base_channels = [2816, 1408, 704, 352, 176]
+        elif backbone == 'convnextv2_large':
+            self.backbone = ConvNeXtV2(depths=[3, 3, 27, 3], dims=[192, 384, 768, 1536],in_chans=input_channels+meta_channel_dim)
+            base_channels = [1536, 768, 384, 192, 96]
         else:
             raise ValueError("Invalid ResNet type. Supported types: 'resnet18', 'resnet34', 'resnet50', 'regnet_y_400mf','regnet_y_800mf', 'regnet_y_1_6gf', 'regnet_y_3_2gf', 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0.")
         
@@ -147,6 +173,15 @@ class SemanticNetworkWithFPN(nn.Module):#
 
             # Extract feature maps from different layers of ResNet
             self.stem = nn.Sequential(self.backbone.conv1, self.backbone.relu, self.backbone.maxpool)
+            self.layer1 = self.backbone.layer1
+            self.layer2 = self.backbone.layer2
+            self.layer3 = self.backbone.layer3
+            self.layer4 = self.backbone.layer4
+
+        elif backbone in ['convnextv2_atto', 'convnextv2_femto', 'convnextv2_pico', 'convnextv2_nano', 'convnextv2_tiny', 'convnextv2_base', 'convnextv2_large', 'convnextv2_huge']:
+
+            # Extract feature maps from different layers of ResNet
+            self.stem = self.backbone.stem
             self.layer1 = self.backbone.layer1
             self.layer2 = self.backbone.layer2
             self.layer3 = self.backbone.layer3
@@ -370,7 +405,7 @@ if __name__ == "__main__":
     # 'regnet_y_800mf'
     import time
     import numpy as np
-    model = SemanticNetworkWithFPN(num_classes=20, backbone="regnet_y_800mf", meta_channel_dim=6).cuda()
+    model = SemanticNetworkWithFPN(num_classes=20, backbone="convnextv2_base", input_channels=2, meta_channel_dim=6, interpolation_mode = 'nearest', attention=True, multi_scale_meta=True).cuda()
     pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Number of parameters: ", pytorch_total_params / 1000000, "M")
     # Timer
