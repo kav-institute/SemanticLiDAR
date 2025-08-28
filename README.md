@@ -7,6 +7,12 @@ A tool for training and finetuning of a semantic segmentation model on data of a
 
 In recent studies, numerous previous works emphasize the importance of semantic segmentation of LiDAR data as a critical component to the development of driver-assistance systems and autonomous vehicles. However, many state-of-the-art methods are tested on outdated, lower-resolution LiDAR sensors and struggle with real-time constraints. This study introduces a novel semantic segmentation framework tailored for modern high-resolution LiDAR sensors that addresses both accuracy and real-time processing demands. We propose a novel LiDAR dataset collected by a cutting-edge automotive 128 layer LiDAR in urban traffic scenes. Furthermore, we propose a semantic segmentation method utilizing surface normals as strong input features. Our approach is bridging the gap between cutting-edge research and practical automotive applications. Additionaly, we provide a Robot Operating System (ROS2) implementation that we operate on our research vehicle.
 
+## News
+
+Stay up-to-date with the latest developments:
+
+- **2025-08-28** – Added support for ConvNextV2 Backbones.
+
 ## Results
 ![Everything Is AWESOME](Images/Results.png)
 
