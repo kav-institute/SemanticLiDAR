@@ -12,6 +12,7 @@ In recent studies, numerous previous works emphasize the importance of semantic 
 Stay up-to-date with the latest developments:
 
 - **2025-08-28** – Added support for ConvNextV2 Backbones.
+- **2025-09-04** – Added dataloader for [SemanticSTF](https://github.com/xiaoaoran/SemanticSTF), [CUDAL](https://omnomnom.vision.rwth-aachen.de/data/panoptic-cudal/), and [SMID](https://www.semanticindustry.top/)
 
 ## Results
 ![Everything Is AWESOME](Images/Results.png)
