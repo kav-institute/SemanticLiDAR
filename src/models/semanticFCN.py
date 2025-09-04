@@ -4,63 +4,31 @@ import torch.nn.functional as F
 import torchvision.models as models
 import torch
 
-from .ConvNextV2 import ConvNeXtV2
-
+try:
+    from .ConvNextV2 import ConvNeXtV2
+except:
+    from ConvNextV2 import ConvNeXtV2
 
 class AttentionModule(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(AttentionModule, self).__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        
-        # Define convolutional layers for query, key, and value
         self.query_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
         self.key_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
         self.value_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
-        
-        # Define convolutional layer for attention scores
         self.attention_conv = nn.Conv2d(out_channels, 1, kernel_size=1)
-        
-        # Softmax layer
         self.softmax = nn.Softmax(dim=-1)
-        
+
     def forward(self, features):
-        # Query, key, and value transformations
         query = self.query_conv(features)
         key = self.key_conv(features)
         value = self.value_conv(features)
         
-        # Compute attention scores
         attention_scores = self.attention_conv(torch.tanh(query + key))
+        B, _, H, W = attention_scores.shape
+        attention_weights = self.softmax(attention_scores.view(B, 1, -1)).view(B, 1, H, W)
         
-        # Apply softmax to get attention weights
-        attention_weights = self.softmax(attention_scores)
-        
-        # Apply attention to the value
-        attended_features = value * attention_weights
-        
-        return attended_features
-
-# class AttentionModule(nn.Module):
-#     def __init__(self, in_channels, out_channels):
-#         super(AttentionModule, self).__init__()
-#         self.query_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
-#         self.key_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
-#         self.value_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1)
-#         self.attention_conv = nn.Conv2d(out_channels, 1, kernel_size=1)
-#         self.softmax = nn.Softmax(dim=-1)
-
-#     def forward(self, features):
-#         query = self.query_conv(features)
-#         key = self.key_conv(features)
-#         value = self.value_conv(features)
-        
-#         attention_scores = self.attention_conv(torch.tanh(query + key))
-#         B, _, H, W = attention_scores.shape
-#         attention_weights = self.softmax(attention_scores.view(B, 1, -1)).view(B, 1, H, W)
-        
-#         attended = value * attention_weights.expand_as(value)
-#         return attended
+        attended = value * attention_weights.expand_as(value)
+        return attended
 
 class SemanticNetworkWithFPN(nn.Module):#
     """
