@@ -130,8 +130,8 @@ To explore a ROS2 demonstration of our system check out the following repo:
 
 
 ## License:
-This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details. Note that the dataset is provided by a different licence!
-The pre-trained models provided in this library may have their own licenses or terms and conditions derived from the dataset used for training. It is your responsibility to determine whether you have permission to use the models for your use case. For example ConvNextV2 is provided by Meta with Creative Commons Attribution-NonCommercial 4.0 International Public
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details. Note that the datasets used are provided by different licences!
+The pre-trained models provided in this library may have their own licenses or terms and conditions derived from the dataset used for training. It is your responsibility to determine whether you have permission to use the models and/or datasets for your use case. For example ConvNextV2 is provided by Meta with Creative Commons Attribution-NonCommercial 4.0 International Public
 License
 
 
