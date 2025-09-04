@@ -44,6 +44,8 @@ def main(args):
     config["BATCH_SIZE"] = args.batch_size
     config["LOSS_FUNCTION"] = "Tversky"
 
+    test_mask = [0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
+
     num_folder = count_folders("/home/appuser/data/SemanticTHAB/sequences/")
 
     if args.test_id == -1:
@@ -53,7 +55,7 @@ def main(args):
         data_path_train = [(bin_path, bin_path.replace("velodyne", "labels").replace("bin", "label")) for folder in [str(i).zfill(4) for i in range(num_folder) if i != args.test_id] for bin_path in glob.glob(f"/home/appuser/data/SemanticTHAB/sequences/{folder}/velodyne/*.bin")]
         data_path_test = [(bin_path, bin_path.replace("velodyne", "labels").replace("bin", "label")) for folder in [str(i).zfill(4) for i in range(num_folder) if i == args.test_id] for bin_path in glob.glob(f"/home/appuser/data/SemanticTHAB/sequences/{folder}/velodyne/*.bin")]
     
-    depth_dataset_train = SemanticKitti(data_path_train, rotate=args.rotate, flip=args.flip)
+    depth_dataset_train = SemanticKitti(data_path_train, rotate=True, flip=True)
     dataloader_train = DataLoader(depth_dataset_train, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     
     depth_dataset_test = SemanticKitti(data_path_test, rotate=False, flip=False)
@@ -91,9 +93,9 @@ def main(args):
         
     # Save Path
     if args.test_id != -1:
-        save_path_p1 ='/home/appuser/data/train_semantic_THAB_v3/test_split_{}/'.format(str(args.test_id).zfill(4))
+        save_path_p1 ='/home/appuser/data/train_semantic_THAB/test_split_{}/'.format(str(args.test_id).zfill(4))
     else:
-        save_path_p1 ='/home/appuser/data/train_semantic_THAB_v3/test_split_{}/'.format("final")
+        save_path_p1 ='/home/appuser/data/train_semantic_THAB/test_split_{}/'.format("final")
     
 
     save_path_p2 ='{}_{}{}{}{}{}/'.format(args.model_type, "a" if args.attention else "", "n" if args.normals else "", "m" if args.multi_scale_meta else "", "p" if args.pretrained else "", config["LOSS_FUNCTION"])
@@ -108,7 +110,7 @@ def main(args):
         json.dump(config, fp)
 
     # train model
-    trainer = Trainer(model, optimizer, save_path, config, scheduler = scheduler, visualize = True)
+    trainer = Trainer(model, optimizer, save_path, config, scheduler = scheduler, visualize = True, test_mask=test_mask)
     trainer(dataloader_train, dataloader_test, args.num_epochs, test_every_nth_epoch=args.test_every_nth_epoch)
 
     # test final model
@@ -116,7 +118,7 @@ def main(args):
         config = json.load(json_data)
         json_data.close()
     
-    test_mask = [0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
+    
 
     #data_path_test = [(bin_path, bin_path.replace("velodyne", "labels").replace("bin", "label")) for bin_path in glob.glob(f"/home/appuser/data/SemanticTHAB/sequences/0006/velodyne/*.bin")]
     depth_dataset_test = SemanticKitti(data_path_test, rotate=False, flip=False)
@@ -135,7 +137,7 @@ if __name__ == '__main__':
                         help='Learning rate for the model (default: 0.001)')
     parser.add_argument('--num_epochs', type=int, default=50,
                         help='Number of epochs for training (default: 50)')
-    parser.add_argument('--test_every_nth_epoch', type=int, default=5,
+    parser.add_argument('--test_every_nth_epoch', type=int, default=1,
                         help='Test every nth epoch (default: 1)')
     parser.add_argument('--test_id', type=int, default=-1,
                         help='Test ID of the test sequence for the leave one out CV. -1 for training on all')
