@@ -163,6 +163,7 @@ License
 }
 ```
 
+
 ## Contributors
 <a href="https://github.com/kav-institute/SemanticLiDAR/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=kav-institute/SemanticLiDAR" />
